@@ -16,7 +16,7 @@ Python‑based data science and a simple web API.
 
 ```text
 Retail_Project/
-├─ streamlit_app.py
+
 ├─ data/
 │  ├─ raw/        # Original Instacart CSVs + products_with_prices.csv (NOT in Git)
 │  ├─ interim/    # Merged / enriched data (generated)
@@ -48,7 +48,7 @@ Retail_Project/
 ├─ notebooks/
 │  └─ eda.ipynb               # Exploratory Data Analysis notebook
 │
-├─ app.py                     # (Optional) Flask API exposing /recommend
+├─ streamlit_app.py           # Streamlit based py file to expose and demonstrate dashboards - Web application / API exposing /recommend
 ├─ .gitignore                 # Ignore large data, caches, venv, etc.
 └─ README.md                  # This file
 
