@@ -16,6 +16,7 @@ Python‑based data science and a simple web API.
 
 ```text
 Retail_Project/
+├─ streamlit_app.py
 ├─ data/
 │  ├─ raw/        # Original Instacart CSVs + products_with_prices.csv (NOT in Git)
 │  ├─ interim/    # Merged / enriched data (generated)
