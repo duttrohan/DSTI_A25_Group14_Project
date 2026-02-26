@@ -1,14 +1,16 @@
+
 import os
 import pandas as pd
+from difflib import get_close_matches
 from config import DATA_PROCESSED
 
 _rules_cache = None
 
 
+# -------------------------------------------------------------
+# LOAD RULES (cached)
+# -------------------------------------------------------------
 def load_business_rules():
-    """
-    Lazy-load business_ready_rules.csv once and cache it.
-    """
     global _rules_cache
     if _rules_cache is not None:
         return _rules_cache
@@ -25,16 +27,34 @@ def load_business_rules():
     return rules
 
 
+# -------------------------------------------------------------
+# UTILITY: fuzzy match item name
+# -------------------------------------------------------------
+def _fuzzy_match_item(user_item: str, all_items):
+    """
+    Return the closest matching product name (case-insensitive),
+    or None if nothing close enough.
+    """
+    lowered = [x.lower() for x in all_items]
+    matches = get_close_matches(user_item.lower(), lowered, n=1, cutoff=0.6)
+    if matches:
+        idx = lowered.index(matches[0])
+        return all_items[idx]
+    return None
+
+
+# -------------------------------------------------------------
+# UTILITY: simple similarity filter
+# -------------------------------------------------------------
 def _too_similar(a: str, b: str) -> bool:
-    """
-    Simple heuristic: if one name is contained in the other (case-insensitive),
-    treat them as too similar (e.g. 'Banana' vs 'Bag of Organic Bananas').
-    """
     a_low = str(a).lower()
     b_low = str(b).lower()
     return (a_low in b_low) or (b_low in a_low)
 
 
+# -------------------------------------------------------------
+# MAIN RECOMMENDER (IMPROVED)
+# -------------------------------------------------------------
 def recommend_items(
     cart_items,
     top_k: int = 5,
@@ -43,58 +63,103 @@ def recommend_items(
     avoid_similar: bool = True,
 ):
     """
-    cart_items: list of product names currently in the cart.
-    top_k: number of recommendations to return.
-    min_lift, min_conf: thresholds to filter rules used for recommendation.
-    avoid_similar: if True, avoid consequents that look too similar to items in cart.
-
-    Returns:
-      list of recommended product names.
+    Robust recommendation engine with:
+    - fuzzy matching
+    - substring matching
+    - fallback rules
+    - rule ranking: expected_revenue > lift > confidence
     """
+
     if not cart_items:
         return []
 
     rules = load_business_rules()
 
-    # 1) Take 1->1 rules whose antecedent is in the cart
-    candidate_rules = rules[
-        rules["antecedents_str"].isin(cart_items)
-    ]
+    # Build a list of all product names appearing anywhere in rules
+    all_products = list(
+        set(rules["antecedents_str"].tolist()) |
+        set(rules["consequents_str"].tolist())
+    )
 
-    # 2) Filter by rule strength
+    # ---------------------------------------------------------
+    # 1) Normalize cart items (fuzzy matching)
+    # ---------------------------------------------------------
+    normalized_cart = []
+    for it in cart_items:
+        fm = _fuzzy_match_item(it, all_products)
+        normalized_cart.append(fm if fm else it)
+
+    # ---------------------------------------------------------
+    # 2) Match rules by:
+    #    (A) exact antecedent match
+    #    (B) substring match
+    # ---------------------------------------------------------
+    candidate_rules = pd.DataFrame()
+
+    for item in normalized_cart:
+        # Exact match
+        exact = rules[rules["antecedents_str"].str.lower() == item.lower()]
+
+        # Substring fuzzy match (ex: "strawberries" -> "Organic Strawberries")
+        contains = rules[rules["antecedents_str"].str.contains(item, case=False, na=False)]
+
+        candidate_rules = pd.concat([candidate_rules, exact, contains], ignore_index=True)
+
+    candidate_rules = candidate_rules.drop_duplicates()
+
+    # ---------------------------------------------------------
+    # 3) Apply rule strength filters
+    # ---------------------------------------------------------
     candidate_rules = candidate_rules[
         (candidate_rules["lift"] >= min_lift) &
         (candidate_rules["confidence"] >= min_conf)
     ]
 
-    if candidate_rules.empty:
-        return []
+    # ---------------------------------------------------------
+    # 4) If candidates exist, rank and return top-k
+    # ---------------------------------------------------------
+    if not candidate_rules.empty:
 
-    # 3) Sort by expected_revenue, then lift, then confidence
-    candidate_rules = candidate_rules.sort_values(
+        # Sort by revenue, then lift, then confidence
+        candidate_rules = candidate_rules.sort_values(
+            by=["expected_revenue", "lift", "confidence"],
+            ascending=False
+        )
+
+        recs = []
+        for _, row in candidate_rules.iterrows():
+            c = row["consequents_str"]
+
+            # Skip if same as cart or too similar
+            if c in normalized_cart:
+                continue
+            if avoid_similar and any(_too_similar(c, x) for x in normalized_cart):
+                continue
+
+            # Unique & top_k limit
+            if c not in recs:
+                recs.append(c)
+            if len(recs) >= top_k:
+                break
+
+        if recs:
+            return recs
+
+    # ---------------------------------------------------------
+    # 5) FALLBACK: If no rules matched
+    # ---------------------------------------------------------
+    # Recommend top revenue consequences globally
+    fallback_rules = rules.sort_values(
         by=["expected_revenue", "lift", "confidence"],
         ascending=False
     )
 
-    # 4) Extract consequents and clean them
-    recs = candidate_rules["consequents_str"].tolist()
-
-    seen = set()
-    unique_recs = []
-    for r in recs:
-        # Skip items already in the cart
-        if r in cart_items:
-            continue
-
-        # Skip if too similar to any cart item
-        if avoid_similar and any(_too_similar(r, c) for c in cart_items):
-            continue
-
-        if r not in seen:
-            seen.add(r)
-            unique_recs.append(r)
-
-        if len(unique_recs) >= top_k:
+    fallback_recs = []
+    for _, row in fallback_rules.iterrows():
+        c = row["consequents_str"]
+        if c not in normalized_cart and c not in fallback_recs:
+            fallback_recs.append(c)
+        if len(fallback_recs) >= top_k:
             break
 
-    return unique_recs
+    return fallback_recs
