@@ -65,7 +65,15 @@
 - Instacart dataset (Kaggle) and association rule mining literature
 
  ## 11. Rubric Coverage Matrix 
-Rubric ItemWhere it’s satisfiedJupyter/Script pipelinescripts/run_*.py, src/* (data → features → clustering → rules)Complete web appstreamlit_app.py (5 pages; Instacart theme)Report (PDF)REPORT.md → PDF exportDemo video3–4 min walkthrough as per scriptGitHub repoThis repository + READMEBONUS best modelProvide top‑line metrics: most revenue per rule, coverage %; optional leaderboard note
+-Rubric Item	Where it’s satisfied
+Jupyter/Script pipeline	scripts/run_*.py, src/* (data → features → clustering → rules)
+Complete web app	streamlit_app.py (5 pages; Instacart theme)
+Report (PDF)	REPORT.md → PDF export
+Demo video	3–4 min walkthrough as per script
+GitHub repo	This repository + README
+BONUS best model	Provide top‑line metrics: most revenue per rule, coverage %; optional leaderboard note
+<img width="551" height="288" alt="image" src="https://github.com/user-attachments/assets/188e1a77-4bf9-49c3-a9a4-33812fd5ea24" />
+
 
 ### Appendix A — Reproduction Commands
 ```bash
