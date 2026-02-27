@@ -205,90 +205,199 @@ elif page == "🔗 Product Associations":
     )
     st.plotly_chart(fig, use_container_width=True)
 
+
 elif page == "💰 Revenue Simulation":
     st.title("💰 Revenue Simulation Tool")
 
     st.write("""
-    Evaluate how much **additional revenue** can be gained 
-    by applying any association rule across a selected number of monthly customers.
+    Evaluate how much **additional revenue** can be gained by applying any association rule
+    across a selected number of monthly customers.
     """)
 
     # ----------------------------------------------------------
-    # 1. Select Antecedent Product
+    # 1) Side-by-side product selectors
     # ----------------------------------------------------------
-    st.subheader("Choose a Product (Antecedent)")
-    antecedent_options = sorted(rules_df["antecedents_str"].unique())
-    selected_antecedent = st.selectbox(
-        "Select a product:",
-        antecedent_options
-    )
+    colA, colB = st.columns(2)
+
+    with colA:
+        st.subheader("Antecedent Product")
+        antecedent_options = sorted(rules_df["antecedents_str"].unique())
+        selected_antecedent = st.selectbox(
+            "Select a product:",
+            antecedent_options,
+            key="rev_antecedent"
+        )
 
     # Filter rules for selected antecedent
     filtered_rules = rules_df[rules_df["antecedents_str"] == selected_antecedent]
 
-    # ----------------------------------------------------------
-    # 2. Select Consequent Product (Rule)
-    # ----------------------------------------------------------
-    st.subheader("Choose a Bundled Recommendation (Consequent)")
-    consequent_options = filtered_rules["consequents_str"].unique().tolist()
+    with colB:
+        st.subheader("Consequent (Recommended) Product")
+        consequent_options = filtered_rules["consequents_str"].unique().tolist()
+        if not consequent_options:
+            st.warning("No rules found for this antecedent. Try another product.")
+            st.stop()
 
-    selected_consequent = st.selectbox(
-        "Select suggested product:",
-        consequent_options
-    )
+        selected_consequent = st.selectbox(
+            "Select recommended product:",
+            consequent_options,
+            key="rev_consequent"
+        )
 
-    # Retrieve rule row
+    # ----------------------------------------------------------
+    # 2) Rule info + expected revenue
+    # ----------------------------------------------------------
     selected_rule = filtered_rules[
         filtered_rules["consequents_str"] == selected_consequent
     ].iloc[0]
 
-    expected_rev = selected_rule["expected_revenue"]
+    expected_rev = float(selected_rule["expected_revenue"])
 
-    st.write(f"### Selected Rule: **{selected_antecedent} → {selected_consequent}**")
-    st.info(f"Expected revenue per occurrence: **${expected_rev:.4f}**")
-
-    # ----------------------------------------------------------
-    # 3. Monthly Orders Slider
-    # ----------------------------------------------------------
-    st.subheader("Monthly Customer Count")
-    monthly_orders = st.slider("Monthly Orders", 500, 50000, 5000)
+    st.markdown(f"### Selected Rule: **{selected_antecedent} → {selected_consequent}**")
+    st.info(f"Expected revenue per occurrence (support × utility): **${expected_rev:.4f}**")
 
     # ----------------------------------------------------------
-    # 4. Simulation Result
+    # 3) Inputs (side-by-side): monthly orders + (optional) adoption rate
     # ----------------------------------------------------------
-    estimated_monthly_gain = monthly_orders * expected_rev
+    c1, c2 = st.columns(2)
+    with c1:
+        monthly_orders = st.slider("Monthly Orders", 500, 50000, 5000, key="rev_orders")
 
-    st.success(f"Estimated Monthly Revenue Impact: **${estimated_monthly_gain:,.2f}**")
+    with c2:
+        adoption_rate = st.slider(
+            "Adoption / Trigger Rate (%)",
+            min_value=1, max_value=100, value=100,
+            help="Share of monthly orders where this rule is actually triggered/used.",
+            key="rev_adoption"
+        ) / 100.0
+
+    # ----------------------------------------------------------
+    # 4) Result (side-by-side KPIs)
+    # ----------------------------------------------------------
+    effective_orders = monthly_orders * adoption_rate
+    estimated_monthly_gain = effective_orders * expected_rev
+
+    k1, k2 = st.columns(2)
+    k1.metric("Effective Orders", f"{int(effective_orders):,}")
+    k2.metric("Estimated Monthly Revenue Impact", f"${estimated_monthly_gain:,.2f}")
 
 
 # -----------------------------------------------------------
 # PROMOTION EFFICIENCY
 # -----------------------------------------------------------
+
 elif page == "📉 Promotion Efficiency":
     st.title("📉 Promotion Efficiency (ROI Calculator)")
 
-    rule = rules_df.sort_values("expected_revenue", ascending=False).iloc[0]
+    st.write("""
+    Compare the profitability of a **targeted discount** versus a **broad, untargeted discount**
+    for any association rule from the model.
+    """)
 
-    st.subheader("Rule Under Analysis")
-    st.write(f"**{rule['antecedents_str']} → {rule['consequents_str']}**")
+    # ----------------------------------------------------------
+    # 1. Side-by-side product selectors
+    # ----------------------------------------------------------
+    colA, colB = st.columns(2)
 
-    base_price = rule["rule_utility"]
+    with colA:
+        st.subheader("Antecedent Product")
+        antecedent_options = sorted(rules_df["antecedents_str"].unique())
+        selected_antecedent = st.selectbox(
+            "Select a product:",
+            antecedent_options,
+            key="promo_antecedent"
+        )
 
-    discount = st.slider("Discount (%)", 1, 50, 10) / 100
-    targeted_customers = st.slider("Targeted Customers per Month", 100, 10000, 2000)
-    untargeted_customers = st.slider("Untargeted Customer Base", 1000, 50000, 20000)
+    # Filter rules for chosen antecedent
+    filtered_rules = rules_df[rules_df["antecedents_str"] == selected_antecedent]
 
+    with colB:
+        st.subheader("Consequent (Recommended) Product")
+        consequent_options = filtered_rules["consequents_str"].unique().tolist()
+
+        selected_consequent = st.selectbox(
+            "Select recommended product:",
+            consequent_options,
+            key="promo_consequent"
+        )
+
+    # ----------------------------------------------------------
+    # 2. Get selected rule information
+    # ----------------------------------------------------------
+    rule_row = filtered_rules[
+        filtered_rules["consequents_str"] == selected_consequent
+    ].iloc[0]
+
+    base_price = rule_row["rule_utility"]
+
+    st.markdown(
+        f"### Selected Rule: **{selected_antecedent} → {selected_consequent}**"
+    )
+    st.info(
+        f"Base price (utility value) for the recommended item: **${base_price:.2f}**"
+    )
+
+    # ----------------------------------------------------------
+    # 3. Side-by-side discount + targeted customers
+    # ----------------------------------------------------------
+    col1, col2 = st.columns(2)
+
+    with col1:
+        discount = st.slider(
+            "Discount (%)",
+            min_value=1,
+            max_value=50,
+            value=10,
+            key="promo_discount"
+        ) / 100
+
+    with col2:
+        targeted_customers = st.slider(
+            "Targeted Customers / Month",
+            min_value=100,
+            max_value=10000,
+            value=2000,
+            key="promo_targeted"
+        )
+
+    # ----------------------------------------------------------
+    # 4. Untargeted customer input
+    # ----------------------------------------------------------
+    untargeted_customers = st.slider(
+        "Untargeted Customer Base",
+        min_value=1000,
+        max_value=50000,
+        value=20000,
+        key="promo_untargeted"
+    )
+
+    # ----------------------------------------------------------
+    # 5. ROI Calculations
+    # ----------------------------------------------------------
     targeted_revenue = targeted_customers * base_price * (1 - discount)
     untargeted_revenue = untargeted_customers * base_price * (1 - discount)
 
     roi_targeted = targeted_revenue - (targeted_customers * base_price)
     roi_untargeted = untargeted_revenue - (untargeted_customers * base_price)
 
-    col1, col2 = st.columns(2)
-    col1.metric("ROI: Targeted Promo", f"${roi_targeted:,.0f}")
-    col2.metric("ROI: Untargeted Promo", f"${roi_untargeted:,.0f}")
+    # ----------------------------------------------------------
+    # 6. ROI Output (side-by-side)
+    # ----------------------------------------------------------
+    col3, col4 = st.columns(2)
 
-    st.info("Positive ROI = profitable promotion. Negative ROI = expected loss.")
+    col3.metric(
+        "ROI: Targeted Promotion",
+        f"${roi_targeted:,.0f}",
+        help="Targeted discount applied only to customers triggering the rule."
+    )
+
+    col4.metric(
+        "ROI: Untargeted Promotion",
+        f"${roi_untargeted:,.0f}",
+        help="Discount applied broadly to all customers."
+    )
+
+    st.info("Positive ROI = profitable promotion. Negative ROI = loss.")
 
 # -----------------------------------------------------------
 # RECOMMENDATION ENGINE
