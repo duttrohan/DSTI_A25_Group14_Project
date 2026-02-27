@@ -9,25 +9,7 @@ application can use.
 
 The project uses the Instacart dataset (extended with product prices) plus
 Python‑based data science and a simple web API.
-
-
-## 🔧 Quick Start
-
-# 1) Create & activate a virtual env (example)
-python -m venv retail_env
-source retail_env/Scripts/activate  # Windows
-# 2) Install
-pip install -r requirements.txt
-# 3) Place raw data
-#    data/raw/{aisles.csv, departments.csv, orders.csv, order_products__prior.csv, products.csv, products_with_prices.csv}
-# 4) Build pipeline
-python scripts/run_enrichment.py
-python scripts/run_clustering.py
-python scripts/run_association_rules.py
-# 5) Launch app
-streamlit run streamlit_app.py
-
-'''bash
+''' 
 ## 1. Repository Structure
 
 ```text
