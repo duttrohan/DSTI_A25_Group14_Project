@@ -10,11 +10,9 @@ application can use.
 The project uses the Instacart dataset (extended with product prices) plus
 Python‑based data science and a simple web API.
 
----
 
 ## 🔧 Quick Start
 
-```bash
 # 1) Create & activate a virtual env (example)
 python -m venv retail_env
 source retail_env/Scripts/activate  # Windows
@@ -29,7 +27,7 @@ python scripts/run_association_rules.py
 # 5) Launch app
 streamlit run streamlit_app.py
 
-
+'''bash
 ## 1. Repository Structure
 
 ```text
