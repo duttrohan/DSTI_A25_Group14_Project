@@ -12,6 +12,24 @@ Python‑based data science and a simple web API.
 
 ---
 
+## 🔧 Quick Start
+
+```bash
+# 1) Create & activate a virtual env (example)
+python -m venv retail_env
+source retail_env/Scripts/activate  # Windows
+# 2) Install
+pip install -r requirements.txt
+# 3) Place raw data
+#    data/raw/{aisles.csv, departments.csv, orders.csv, order_products__prior.csv, products.csv, products_with_prices.csv}
+# 4) Build pipeline
+python scripts/run_enrichment.py
+python scripts/run_clustering.py
+python scripts/run_association_rules.py
+# 5) Launch app
+streamlit run streamlit_app.py
+
+
 ## 1. Repository Structure
 
 ```text
@@ -50,6 +68,8 @@ Retail_Project/
 │
 ├─ streamlit_app.py           # Streamlit based py file to expose and demonstrate dashboards - Web application / API exposing /recommend
 ├─ .gitignore                 # Ignore large data, caches, venv, etc.
+├─ requirements.txt           # includes all the necessary installation modules
+└─ ProjectReport.md           # To download PDF Report copy
 └─ README.md                  # This file
 
 ```
