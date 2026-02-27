@@ -1,6 +1,7 @@
 # Data-Driven Retail Insights for Cost Savings & Revenue Growth
-**Team:** DSTI Group 14  
-**Course:** Applied MSc in DS & AI  
+**Team:** DSTI  A25 - Group 14  
+**Course:** Applied MSC in Data Science / Applied MSC in Data Engineering / Applied MSC in Data Analysis / Executive MSC in Data Science and AI   
+**Mentor:** Assan Sanogo
 **Date:** February 2026
 
 ## 1. Executive Summary
