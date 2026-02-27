@@ -65,8 +65,7 @@
 - Instacart dataset (Kaggle) and association rule mining literature
 
  ## 11. Rubric Coverage Matrix 
-<img width="551" height="281" alt="image" src="https://github.com/user-attachments/assets/4d5ed77d-c2e9-4f12-801f-081905362623" />
-
+<img width="551" height="209" alt="image" src="https://github.com/user-attachments/assets/d154898f-c570-4686-9201-3b2b8e64ef32" />
 
 ### Appendix A — Reproduction Commands
 ```bash
