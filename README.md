@@ -249,8 +249,9 @@ And the code/API:
   - Association rules used predictively for next‑item recommendations.
   
 # 9. Contributors
-- Data Analysis: 
-- Data Science / ML: Rahiba Shereef
-- Web / Cloud / Front‑end: 
+- Data Analysis: Naga Vamsi Kondisetty (DA), 
+- Data Enrichment: Rohan Rohan Sundarbhai Dantani (DE)
+- Data Science / ML: Rahiba Shereef (DS) / Nilesh V Pingale (Executive DS & AI) 
+- Web / Cloud / Front‑end: Stream lit - Nilesh V Pingale (Executive DS & AI)
 - Supervisor / Course: 
 
