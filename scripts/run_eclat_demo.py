@@ -18,8 +18,8 @@ if __name__ == "__main__":
     print("[run_eclat_demo] Starting Eclat demo...")
     df_itemsets = run_eclat_demo(
         top_n_products=100,
-        min_support=0.01,   # can raise to 0.02 if too many itemsets
-        sample_size=10000,  # sampled transactions
+        min_support=0.01,
+        sample_size=10000,
     )
     print("[run_eclat_demo] Result shape:", df_itemsets.shape)
     print("[run_eclat_demo] Done.")

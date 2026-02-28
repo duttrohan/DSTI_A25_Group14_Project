@@ -3,16 +3,24 @@ import pandas as pd
 from mlxtend.preprocessing import TransactionEncoder
 from config import DATA_INTERIM
 
-def build_transactions(top_n_products: int = 500, use_price: bool = True):
+
+def build_transactions(top_n_products: int = 500):
     """
-    Build list of products per order (transactions).
-    Returns (transactions, full_df with price).
+    Build transactions as list of product_name per order, restricted
+    to the top_n_products most frequent products.
+
+    Returns:
+      transactions: list of lists
+      full_price: full merged DataFrame with price
     """
-    filename = "order_products_full_with_price.csv" if use_price else "order_products_full.csv"
-    full_path = os.path.join(DATA_INTERIM, filename)
+    full_path = os.path.join(DATA_INTERIM, "order_products_full_with_price.csv")
+    if not os.path.exists(full_path):
+        raise FileNotFoundError(
+            f"{full_path} not found. Run run_enrichment.py first."
+        )
+
     full = pd.read_csv(full_path)
 
-    # focus on top N products to keep basket matrix manageable
     top_products = (
         full["product_name"]
         .value_counts()
@@ -33,6 +41,9 @@ def build_transactions(top_n_products: int = 500, use_price: bool = True):
 
 
 def encode_transactions(transactions):
+    """
+    One-hot encode list-of-lists transactions into a basket DataFrame.
+    """
     te = TransactionEncoder()
     te_array = te.fit(transactions).transform(transactions)
     basket = pd.DataFrame(te_array, columns=te.columns_).astype(bool)

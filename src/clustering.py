@@ -6,16 +6,22 @@ from customer_features import build_customer_features
 
 RANDOM_STATE = 42
 
+
 def cluster_customers(n_clusters: int = 4, use_price: bool = True):
     """
-    Building customer features and run clustering.
+    Build customer features and run MiniBatchKMeans clustering.
+
+    Output:
+      data/processed/customer_segments.csv
     """
+    print("[clustering] Building customer features...")
     features = build_customer_features(use_price=use_price)
 
     X = features.values
     scaler = StandardScaler()
     X_scaled = scaler.fit_transform(X)
 
+    print("[clustering] Running MiniBatchKMeans...")
     model = MiniBatchKMeans(
         n_clusters=n_clusters,
         batch_size=2048,
@@ -29,5 +35,6 @@ def cluster_customers(n_clusters: int = 4, use_price: bool = True):
     out_path = os.path.join(DATA_PROCESSED, "customer_segments.csv")
     features_clustered.to_csv(out_path, index=True)  # index=user_id
     print(f"[clustering] customer_segments saved → {out_path}")
+    print("[clustering] Shape:", features_clustered.shape)
 
     return features_clustered, model, scaler
