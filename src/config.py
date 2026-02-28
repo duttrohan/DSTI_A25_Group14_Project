@@ -1,6 +1,7 @@
 import os
 
 PROJECT_ROOT = r"C:\Users\shereefr\MY_PROJECT\Retail_Project"  # adapt if needed
+PROJECT_ROOT = r"C:\Users\Comp\MY_PROJECT\Retail_Project"
 
 DATA_RAW       = os.path.join(PROJECT_ROOT, "data", "raw")
 DATA_INTERIM   = os.path.join(PROJECT_ROOT, "data", "interim")

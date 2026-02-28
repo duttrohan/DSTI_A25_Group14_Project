@@ -9,13 +9,12 @@ application can use.
 
 The project uses the Instacart dataset (extended with product prices) plus
 Python‑based data science and a simple web API.
-
----
-
+''' 
 ## 1. Repository Structure
 
 ```text
 Retail_Project/
+
 ├─ data/
 │  ├─ raw/        # Original Instacart CSVs + products_with_prices.csv (NOT in Git)
 │  ├─ interim/    # Merged / enriched data (generated)
@@ -47,8 +46,10 @@ Retail_Project/
 ├─ notebooks/
 │  └─ eda.ipynb               # Exploratory Data Analysis notebook
 │
-├─ app.py                     # (Optional) Flask API exposing /recommend
+├─ streamlit_app.py           # Streamlit based py file to expose and demonstrate dashboards - Web application / API exposing /recommend
 ├─ .gitignore                 # Ignore large data, caches, venv, etc.
+├─ requirements.txt           # includes all the necessary installation modules
+└─ ProjectReport.md           # To download PDF Report copy
 └─ README.md                  # This file
 
 ```
@@ -248,8 +249,9 @@ And the code/API:
   - Association rules used predictively for next‑item recommendations.
   
 # 9. Contributors
-- Data Analysis: 
-- Data Science / ML: Rahiba Shereef
-- Web / Cloud / Front‑end: 
+- Data Analysis: Naga Vamsi Kondisetty (DA), 
+- Data Enrichment: Rohan Rohan Sundarbhai Dantani (DE)
+- Data Science / ML: Rahiba Shereef (DS) / Nilesh V Pingale (Executive DS & AI) 
+- Web / Cloud / Front‑end: Stream lit - Nilesh V Pingale (Executive DS & AI)
 - Supervisor / Course: 
 
